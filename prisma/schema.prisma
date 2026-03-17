@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  username  String     @unique
+  password  String
+  firstName String?
+  lastName  String?
+  phone     String?
+  panNumber String?    @unique
+  aadhaNumber String?  @unique
+  bankAccount String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  portfolio   Portfolio?
+  trades      Trade[]
+  walletTransaction WalletTransaction[]
+  
+  @@map("users")
+}
+
+model Portfolio {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  totalBalance    Float   @default(100000)
+  availableBalance Float  @default(100000)
+  investedValue   Float   @default(0)
+  totalGain       Float   @default(0)
+  totalGainPercent Float  @default(0)
+  
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  holdings  StockHolding[]
+  
+  @@map("portfolios")
+}
+
+model StockHolding {
+  id         String   @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  
+  symbol     String
+  quantity   Int
+  avgBuyPrice Float
+  currentPrice Float
+  totalInvestment Float
+  currentValue Float
+  gainLoss   Float
+  gainLossPercent Float
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([portfolioId, symbol])
+  @@map("stock_holdings")
+}
+
+model Stock {
+  id        String   @id @default(cuid())
+  symbol    String   @unique
+  name      String
+  sector    String
+  price     Float
+  change    Float
+  changePercent Float
+  dayHigh   Float
+  dayLow    Float
+  fiftyTwoWeekHigh Float
+  fiftyTwoWeekLow  Float
+  marketCap String
+  pe        Float
+  dividend  Float?
+  
+  lastUpdated DateTime @default(now())
+  
+  @@map("stocks")
+}
+
+model Trade {
+  id        String     @id @default(cuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      String     // "BUY" or "SELL"
+  symbol    String
+  quantity  Int
+  price     Float
+  total     Float
+  
+  brokerageCharges Float  @default(0)
+  tdsAmount  Float       @default(0)
+  
+  blockchainHash  String?  // Hash from blockchain
+  blockchainTx    String?  // Blockchain transaction ID
+  
+  executedAt DateTime   @default(now())
+  
+  @@map("trades")
+}
+
+model WalletTransaction {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type       String   // "DEPOSIT", "WITHDRAWAL"
+  amount     Float
+  description String?
+  
+  transactionId String?
+  status     String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  
+  createdAt  DateTime @default(now())
+  
+  @@map("wallet_transactions")
+}
+
+model BlockchainRecord {
+  id         String   @id @default(cuid())
+  tradeId    String   @unique
+  
+  hash       String   @unique
+  prevHash   String?
+  timestamp  DateTime @default(now())
+  
+  // Trade details stored immutably
+  userId     String
+  type       String
+  symbol     String
+  quantity   Int
+  price      Float
+  
+  contractAddress String?
+  blockNumber     BigInt?
+  gasUsed         BigInt?
+  
+  @@map("blockchain_records")
+}
+
+model Dividend {
+  id        String   @id @default(cuid())
+  symbol    String
+  exDate    DateTime
+  recordDate DateTime
+  payDate   DateTime
+  
+  amount    Float
+  description String?
+  
+  @@map("dividends")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   String
+  
+  createdAt DateTime @default(now())
+  
+  @@map("audit_logs")
+}
