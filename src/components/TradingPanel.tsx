@@ -8,6 +8,7 @@ interface TradingPanelProps {
   price: number;
   setPrice: (price: number) => void;
   executeTrade: (type: 'buy' | 'sell') => void;
+  currentPrice: number;
 }
 
 export default function TradingPanel({
@@ -17,7 +18,8 @@ export default function TradingPanel({
   setQuantity,
   price,
   setPrice,
-  executeTrade
+  executeTrade,
+  currentPrice
 }: TradingPanelProps) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -36,6 +38,7 @@ export default function TradingPanel({
             <option>HDFC</option>
             <option>ICICIBANK</option>
           </select>
+          <p className="text-sm text-gray-500 mt-1">Current Price: ₹{currentPrice}</p>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Quantity</label>

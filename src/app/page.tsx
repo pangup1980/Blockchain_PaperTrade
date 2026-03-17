@@ -6,6 +6,7 @@ import MarketOverview from '../components/MarketOverview';
 import TradingPanel from '../components/TradingPanel';
 import Portfolio from '../components/Portfolio';
 import TradeHistory from '../components/TradeHistory';
+import Watchlist from '../components/Watchlist';
 import { Trade } from '../types';
 
 export default function Home() {
@@ -23,6 +24,13 @@ export default function Home() {
     return [];
   });
   const [chartData, setChartData] = useState([]);
+  const [stockPrices, setStockPrices] = useState<Record<string, number>>({
+    RELIANCE: 2500,
+    TCS: 3200,
+    INFY: 1400,
+    HDFC: 1600,
+    ICICIBANK: 900
+  });
   const niftyRef = useRef(22000);
 
   // Simulate real-time data
@@ -38,10 +46,19 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Save trades to localStorage
+  // Simulate stock price updates
   useEffect(() => {
-    localStorage.setItem('trades', JSON.stringify(trades));
-  }, [trades]);
+    const interval = setInterval(() => {
+      setStockPrices(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(stock => {
+          updated[stock] += (Math.random() - 0.5) * 50;
+        });
+        return updated;
+      });
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const executeTrade = (type: 'buy' | 'sell') => {
     const trade = {
@@ -88,9 +105,12 @@ export default function Home() {
               price={price}
               setPrice={setPrice}
               executeTrade={executeTrade}
+              currentPrice={stockPrices[selectedStock] || 0}
             />
 
             <Portfolio holdings={holdings} />
+
+            <Watchlist watchlist={watchlist} setWatchlist={setWatchlist} />
           </div>
         </div>
 
