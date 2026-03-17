@@ -9,6 +9,7 @@ import TradeHistory from '../components/TradeHistory';
 import Watchlist from '../components/Watchlist';
 import News from '../components/News';
 import { Trade, ChartDataPoint } from '../types';
+import { AlphaVantageService } from '../services/alphaVantageService';
 
 export default function Home() {
   const [balance, setBalance] = useState(100000); // Virtual money
@@ -26,7 +27,7 @@ export default function Home() {
     }
     return [];
   });
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
   const [stockPrices, setStockPrices] = useState<Record<string, number>>({
     RELIANCE: 2500,
     TCS: 3200,
@@ -35,32 +36,42 @@ export default function Home() {
     ICICIBANK: 900
   });
   const [watchlist, setWatchlist] = useState<string[]>(['RELIANCE', 'TCS']);
+  const [loading, setLoading] = useState(true);
   const niftyRef = useRef(22000);
 
-  // Simulate real-time data
+  // Fetch real-time data from Alpha Vantage
   useEffect(() => {
-    const interval = setInterval(() => {
-      const change = (Math.random() - 0.5) * 2;
-      setNiftyChange(change);
-      const newValue = niftyRef.current + change * 100;
-      niftyRef.current = newValue;
-      setNiftyValue(newValue);
-      setChartData(prev => [...prev.slice(-19), { time: new Date().toLocaleTimeString(), value: newValue }]);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    const fetchMarketData = async () => {
+      try {
+        setLoading(true);
+        // Fetch NIFTY quote
+        const quote = await AlphaVantageService.getStockQuote('NSE:NIFTYBEES');
+        setNiftyValue(quote.price);
+        setNiftyChange(quote.changePercent);
+        
+        // Fetch intraday data for chart
+        const intradayData = await AlphaVantageService.getIntraday('NSE:NIFTYBEES', '1min');
+        setChartData(intradayData);
+        
+        // Fetch stock prices
+        const stocks = ['RELIANCE', 'TCS', 'INFY', 'HDFC', 'ICICIBANK'];
+        const prices: Record<string, number> = {};
+        for (const stock of stocks) {
+          const stockQuote = await AlphaVantageService.getStockQuote(stock);
+          prices[stock] = stockQuote.price;
+        }
+        setStockPrices(prices);
+      } catch (error) {
+        console.error('Error fetching market data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Simulate stock price updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStockPrices(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(stock => {
-          updated[stock] += (Math.random() - 0.5) * 50;
-        });
-        return updated;
-      });
-    }, 10000);
+    fetchMarketData();
+    
+    // Refresh data every 60 seconds
+    const interval = setInterval(fetchMarketData, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -111,7 +122,7 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <MarketOverview niftyValue={niftyValue} niftyChange={niftyChange} chartData={chartData} />
+          <MarketOverview niftyValue={niftyValue} niftyChange={niftyChange} chartData={chartData} loading={loading} />
 
           <div className="lg:col-span-2 space-y-6">
             <TradingPanel
