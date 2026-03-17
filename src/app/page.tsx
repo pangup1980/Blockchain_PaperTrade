@@ -14,7 +14,8 @@ export default function Home() {
   const [niftyValue, setNiftyValue] = useState(22000);
   const [selectedStock, setSelectedStock] = useState('RELIANCE');
   const [quantity, setQuantity] = useState(10);
-  const [holdings, setHoldings] = useState({});
+  const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
+  const [holdings, setHoldings] = useState<Record<string, { quantity: number, avgPrice: number }>>({});
   const [niftyChange, setNiftyChange] = useState(0);
   const [trades, setTrades] = useState<Trade[]>(() => {
     if (typeof window !== 'undefined') {
@@ -61,30 +62,43 @@ export default function Home() {
   }, []);
 
   const executeTrade = (type: 'buy' | 'sell') => {
+    const actualPrice = orderType === 'market' ? stockPrices[selectedStock] : price;
     const trade = {
       id: Date.now(),
       type,
       stock: selectedStock,
       quantity,
-      price,
+      price: actualPrice,
       timestamp: new Date().toISOString(),
       hash: 'blockchain_hash_' + Math.random().toString(36).substr(2, 9) // Simulate blockchain hash
     };
     setTrades(prev => [...prev, trade]);
     // Update balance
-    const cost = quantity * price;
+    const cost = quantity * actualPrice;
     if (type === 'buy') {
       setBalance(prev => prev - cost);
-      setHoldings(prev => ({
-        ...prev,
-        [selectedStock]: (prev[selectedStock] || 0) + quantity
-      }));
+      setHoldings(prev => {
+        const current = prev[selectedStock] || { quantity: 0, avgPrice: 0 };
+        const totalQuantity = current.quantity + quantity;
+        const totalCost = current.quantity * current.avgPrice + cost;
+        const newAvgPrice = totalCost / totalQuantity;
+        return {
+          ...prev,
+          [selectedStock]: { quantity: totalQuantity, avgPrice: newAvgPrice }
+        };
+      });
     } else {
       setBalance(prev => prev + cost);
-      setHoldings(prev => ({
-        ...prev,
-        [selectedStock]: (prev[selectedStock] || 0) - quantity
-      }));
+      setHoldings(prev => {
+        const current = prev[selectedStock] || { quantity: 0, avgPrice: 0 };
+        if (current.quantity >= quantity) {
+          return {
+            ...prev,
+            [selectedStock]: { ...current, quantity: current.quantity - quantity }
+          };
+        }
+        return prev;
+      });
     }
   };
 
@@ -106,9 +120,11 @@ export default function Home() {
               setPrice={setPrice}
               executeTrade={executeTrade}
               currentPrice={stockPrices[selectedStock] || 0}
+              orderType={orderType}
+              setOrderType={setOrderType}
             />
 
-            <Portfolio holdings={holdings} />
+            <Portfolio holdings={holdings} stockPrices={stockPrices} />
 
             <Watchlist watchlist={watchlist} setWatchlist={setWatchlist} />
           </div>

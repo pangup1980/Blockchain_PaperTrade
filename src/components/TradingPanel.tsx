@@ -9,6 +9,8 @@ interface TradingPanelProps {
   setPrice: (price: number) => void;
   executeTrade: (type: 'buy' | 'sell') => void;
   currentPrice: number;
+  orderType: 'market' | 'limit';
+  setOrderType: (type: 'market' | 'limit') => void;
 }
 
 export default function TradingPanel({
@@ -19,12 +21,25 @@ export default function TradingPanel({
   price,
   setPrice,
   executeTrade,
-  currentPrice
+  currentPrice,
+  orderType,
+  setOrderType
 }: TradingPanelProps) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold mb-4">Trade</h2>
       <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Order Type</label>
+          <select
+            value={orderType}
+            onChange={(e) => setOrderType(e.target.value as 'market' | 'limit')}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="market">Market</option>
+            <option value="limit">Limit</option>
+          </select>
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Stock</label>
           <select
@@ -55,8 +70,10 @@ export default function TradingPanel({
             type="number"
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+            disabled={orderType === 'market'}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
           />
+          {orderType === 'market' && <p className="text-sm text-gray-500 mt-1">Will use current market price</p>}
         </div>
         <div className="flex space-x-2">
           <button
