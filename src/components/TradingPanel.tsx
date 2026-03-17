@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 interface TradingPanelProps {
   selectedStock: string;
   setSelectedStock: (stock: string) => void;

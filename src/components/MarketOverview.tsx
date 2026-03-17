@@ -1,10 +1,11 @@
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ChartDataPoint } from '../types';
 
 interface MarketOverviewProps {
   niftyValue: number;
   niftyChange: number;
-  chartData: any[];
+  chartData: ChartDataPoint[];
 }
 
 export default function MarketOverview({ niftyValue, niftyChange, chartData }: MarketOverviewProps) {

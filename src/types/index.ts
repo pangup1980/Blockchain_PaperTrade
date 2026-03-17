@@ -7,3 +7,8 @@ export interface Trade {
   timestamp: string;
   hash: string;
 }
+
+export interface ChartDataPoint {
+  time: string;
+  value: number;
+}

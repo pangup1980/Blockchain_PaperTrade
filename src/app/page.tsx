@@ -8,13 +8,14 @@ import Portfolio from '../components/Portfolio';
 import TradeHistory from '../components/TradeHistory';
 import Watchlist from '../components/Watchlist';
 import News from '../components/News';
-import { Trade } from '../types';
+import { Trade, ChartDataPoint } from '../types';
 
 export default function Home() {
   const [balance, setBalance] = useState(100000); // Virtual money
   const [niftyValue, setNiftyValue] = useState(22000);
   const [selectedStock, setSelectedStock] = useState('RELIANCE');
   const [quantity, setQuantity] = useState(10);
+  const [price, setPrice] = useState(2500);
   const [orderType, setOrderType] = useState<'market' | 'limit'>('market');
   const [holdings, setHoldings] = useState<Record<string, { quantity: number, avgPrice: number }>>({});
   const [niftyChange, setNiftyChange] = useState(0);
@@ -25,7 +26,7 @@ export default function Home() {
     }
     return [];
   });
-  const [chartData, setChartData] = useState([]);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [stockPrices, setStockPrices] = useState<Record<string, number>>({
     RELIANCE: 2500,
     TCS: 3200,
@@ -33,6 +34,7 @@ export default function Home() {
     HDFC: 1600,
     ICICIBANK: 900
   });
+  const [watchlist, setWatchlist] = useState<string[]>(['RELIANCE', 'TCS']);
   const niftyRef = useRef(22000);
 
   // Simulate real-time data
