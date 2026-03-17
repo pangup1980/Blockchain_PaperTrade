@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, History } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -19,32 +19,30 @@ export default function Home() {
   const [niftyValue, setNiftyValue] = useState(22000);
   const [selectedStock, setSelectedStock] = useState('RELIANCE');
   const [quantity, setQuantity] = useState(10);
-  const [price, setPrice] = useState(2500);
   const [holdings, setHoldings] = useState({});
   const [niftyChange, setNiftyChange] = useState(0);
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [chartData, setChartData] = useState([]);
-
-  // Load trades from localStorage
-  useEffect(() => {
-    const savedTrades = localStorage.getItem('trades');
-    if (savedTrades) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTrades(JSON.parse(savedTrades));
+  const [trades, setTrades] = useState<Trade[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('trades');
+      return saved ? JSON.parse(saved) : [];
     }
-  }, []);
+    return [];
+  });
+  const [chartData, setChartData] = useState([]);
+  const niftyRef = useRef(22000);
 
   // Simulate real-time data
   useEffect(() => {
     const interval = setInterval(() => {
       const change = (Math.random() - 0.5) * 2;
       setNiftyChange(change);
-      const newValue = niftyValue + change * 100;
+      const newValue = niftyRef.current + change * 100;
+      niftyRef.current = newValue;
       setNiftyValue(newValue);
       setChartData(prev => [...prev.slice(-19), { time: new Date().toLocaleTimeString(), value: newValue }]);
     }, 5000);
     return () => clearInterval(interval);
-  }, [niftyValue]);
+  }, []);
 
   // Save trades to localStorage
   useEffect(() => {
@@ -204,7 +202,7 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {trades.map((trade) => (
+                {trades.map((trade: Trade) => (
                   <tr key={trade.id} className="border-b">
                     <td className={`py-2 ${trade.type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>{trade.type.toUpperCase()}</td>
                     <td className="py-2">{trade.stock}</td>
