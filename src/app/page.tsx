@@ -7,6 +7,7 @@ import TradingPanel from '../components/TradingPanel';
 import Portfolio from '../components/Portfolio';
 import TradeHistory from '../components/TradeHistory';
 import Watchlist from '../components/Watchlist';
+import News from '../components/News';
 import { Trade } from '../types';
 
 export default function Home() {
@@ -107,10 +108,10 @@ export default function Home() {
       <Header balance={balance} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <MarketOverview niftyValue={niftyValue} niftyChange={niftyChange} chartData={chartData} />
 
-          <div className="space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             <TradingPanel
               selectedStock={selectedStock}
               setSelectedStock={setSelectedStock}
@@ -125,8 +126,11 @@ export default function Home() {
             />
 
             <Portfolio holdings={holdings} stockPrices={stockPrices} />
+          </div>
 
+          <div className="space-y-6">
             <Watchlist watchlist={watchlist} setWatchlist={setWatchlist} />
+            <News />
           </div>
         </div>
 
