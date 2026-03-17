@@ -1,93 +1,41 @@
-'use client';
-
-import { Trade } from '@/types';
-import { ArrowUpRight, ArrowDownLeft, Shield } from 'lucide-react';
+import { History } from 'lucide-react';
+import { Trade } from '../types';
 
 interface TradeHistoryProps {
-  trades?: Trade[];
-  loading?: boolean;
+  trades: Trade[];
 }
 
-export default function TradeHistory({ trades = [], loading = false }: TradeHistoryProps) {
-  if (loading) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <p className="text-center text-gray-500">Loading trade history...</p>
-      </div>
-    );
-  }
-
+export default function TradeHistory({ trades }: TradeHistoryProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-6">Trade History</h2>
-
-      {trades.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <p>No trades yet. Start trading to see your history!</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Symbol</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Quantity</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Price</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Brokerage</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Blockchain</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+    <div className="mt-8 bg-white rounded-lg shadow p-6">
+      <h2 className="text-xl font-semibold mb-4 flex items-center">
+        <History className="h-5 w-5 mr-2" />
+        Trade History (Blockchain Recorded)
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-2">Type</th>
+              <th className="text-left py-2">Stock</th>
+              <th className="text-left py-2">Quantity</th>
+              <th className="text-left py-2">Price</th>
+              <th className="text-left py-2">Blockchain Hash</th>
+            </tr>
+          </thead>
+          <tbody>
+            {trades.map((trade: Trade) => (
+              <tr key={trade.id} className="border-b">
+                <td className={`py-2 ${trade.type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>{trade.type.toUpperCase()}</td>
+                <td className="py-2">{trade.stock}</td>
+                <td className="py-2">{trade.quantity}</td>
+                <td className="py-2">₹{trade.price}</td>
+                <td className="py-2 text-xs font-mono">{trade.hash}</td>
               </tr>
-            </thead>
-            <tbody>
-              {trades.map((trade, index) => (
-                <tr key={trade.id || index} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {trade.type === 'BUY' ? (
-                        <ArrowUpRight className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <ArrowDownLeft className="w-5 h-5 text-red-600" />
-                      )}
-                      <span className="font-semibold">
-                        {trade.type === 'BUY' ? 'BUY' : 'SELL'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 font-semibold">{trade.symbol}</td>
-                  <td className="px-4 py-3">{trade.quantity}</td>
-                  <td className="px-4 py-3">₹{trade.price.toFixed(2)}</td>
-                  <td className="px-4 py-3 font-semibold">₹{trade.total.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    ₹{trade.brokerageCharges.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {trade.blockchainHash ? (
-                      <div
-                        className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded text-xs"
-                        title={`Hash: ${trade.blockchainHash}`}
-                      >
-                        <Shield className="w-3 h-3 text-blue-600" />
-                        <span className="text-blue-600 font-mono truncate max-w-xs">
-                          {trade.blockchainHash.substring(0, 8)}...
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">Pending</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {trade.executedAt
-                      ? new Date(trade.executedAt).toLocaleDateString()
-                      : '-'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

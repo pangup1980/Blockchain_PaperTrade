@@ -1,69 +1,41 @@
-'use client';
-
-import { Stock } from '@/types';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface MarketOverviewProps {
-  stocks: Stock[];
-  onStockSelect?: (symbol: string) => void;
-  selectedSymbol?: string;
+  niftyValue: number;
+  niftyChange: number;
+  chartData: any[];
 }
 
-export default function MarketOverview({
-  stocks,
-  onStockSelect,
-  selectedSymbol,
-}: MarketOverviewProps) {
+export default function MarketOverview({ niftyValue, niftyChange, chartData }: MarketOverviewProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-6">Market Overview</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stocks.map((stock) => (
-          <div
-            key={stock.symbol}
-            onClick={() => onStockSelect?.(stock.symbol)}
-            className={`p-4 rounded-lg border-2 cursor-pointer transition ${
-              selectedSymbol === stock.symbol
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-blue-300'
-            }`}
-          >
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <p className="font-bold text-lg">{stock.symbol}</p>
-                <p className="text-xs text-gray-500">{stock.name}</p>
-              </div>
-              {stock.changePercent >= 0 ? (
-                <TrendingUp className="w-5 h-5 text-green-500" />
-              ) : (
-                <TrendingDown className="w-5 h-5 text-red-500" />
-              )}
-            </div>
-
-            <div className="mb-2">
-              <p className="text-2xl font-bold">₹{stock.price.toFixed(2)}</p>
-            </div>
-
-            <div className="flex justify-between text-sm">
-              <span className={stock.change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {stock.change >= 0 ? '+' : ''}
-                {stock.change.toFixed(2)} ({stock.changePercent.toFixed(2)}%)
-              </span>
-            </div>
-
-            <div className="mt-3 pt-3 border-t text-xs text-gray-600">
-              <div className="flex justify-between mb-1">
-                <span>High: ₹{stock.dayHigh.toFixed(2)}</span>
-                <span>Low: ₹{stock.dayLow.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>P/E: {stock.pe.toFixed(2)}</span>
-                <span>Div: {stock.dividend?.toFixed(2) || 'N/A'}%</span>
-              </div>
-            </div>
+    <div className="lg:col-span-2">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4">Market Overview</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-medium">NIFTY 50</h3>
+            <p className="text-3xl font-bold">{niftyValue.toFixed(2)}</p>
+            <p className={`flex items-center ${niftyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {niftyChange >= 0 ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
+              {niftyChange.toFixed(2)}%
+            </p>
           </div>
-        ))}
+          <BarChart3 className="h-16 w-16 text-blue-500" />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6 mt-6">
+        <h2 className="text-xl font-semibold mb-4">NIFTY 50 Chart</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="time" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
